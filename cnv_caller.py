@@ -191,17 +191,17 @@ class RWriter(object):
 
 class CovScanner(object):
     def __init__(self):
-        self.window_size = ()
+        self.window_size = -1
         self.pos_start = 0
-        self.pos_end = ()
-        self.bamfile = ()
+        self.pos_end = -1
+        self.bamfile = None
         self.ref = None
-        self.name = ()
-        self.mapq_cutoff = ()
+        self.name = ""
+        self.mapq_cutoff = -1
         self.RATIOS = []
         self.POS = []
         self.medians = None
-        self.normalizer = ()
+        self.normalizer = None
 
     def setWindowSize(self, win):
         self.window_size = win
