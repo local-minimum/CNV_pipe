@@ -93,7 +93,6 @@ def getNormalizer(bam, ref, NAMES, LENGTH):
 class RWriter(object):
     def __init__(self, name_list):
         self.data = ()
-        self.fh = None
         self.name = ()
         self.head = ()
         self.mid = ()
@@ -178,15 +177,15 @@ class RWriter(object):
         self.writeMid()
         self.writeMerger()
         self.writeMain()
-        self.writer(self.name)
+        self.write()
 
-    def writer(self, name):
-        self.fh = open(name, "w")
-        self.fh.write(self.head)
-        self.fh.write(self.mid)
-        self.fh.write(self.merge)
-        self.fh.write(self.main)
-        self.fh.close()
+    def write(self):
+        with open(self.name, "w") as fh:
+            fh.write(self.head)
+            fh.write(self.mid)
+            fh.write(self.merge)
+            fh.write(self.main)
+            fh.close()
 
 
 class CovScanner(object):
