@@ -2,7 +2,7 @@ import pysam
 import numpy
 import sys
 import os
-import math
+
 from optparse import OptionParser as opt
 from subprocess import call
 
@@ -227,24 +227,24 @@ class CovScanner(object):
         while self.pos_end < ln:
             window_mean = self.windowMean(self.bamfile)
             self.POS.append(self.pos_end)
-            self.RATIOS.append(self.getLogratios(window_mean))
+            self.RATIOS.append(self.getLogRatios(window_mean))
             self.pos_start = self.pos_start + self.window_size
             self.pos_end = self.pos_end + self.window_size
         return self.RATIOS, self.POS
 
-    def getLogratios(self, window_mean):
-        if self.ref == None:
-            logratio = window_mean / self.medians[self.name]
+    def getLogRatios(self, window_mean):
+        if self.ref is None:
+            logRatio = window_mean / self.medians[self.name]
         else:
             win_mean_ref = self.windowMean(self.ref)
             if win_mean_ref == 0:
                 win_mean_ref = 1
-            logratio = (window_mean * self.normalizer) / win_mean_ref
-        if logratio == 0:
-            logratio = 0
-        else:
-            logratio = math.log(logratio, 2)
-        return logratio
+            logRatio = (window_mean * self.normalizer) / win_mean_ref
+
+        if logRatio != 0:
+            logRatio = numpy.log2(logRatio)
+
+        return logRatio
 
     def windowMean(self, bam):
         bam = pysam.AlignmentFile(bam, "rb")
