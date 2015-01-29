@@ -83,7 +83,7 @@ def getNormalizer(bam, ref, NAMES, LENGTH):
     return normalizer
 
 
-class RWriter():
+class RWriter(object):
     def __init__(self, name_list):
         self.data = ()
         self.fh = None
@@ -182,7 +182,7 @@ class RWriter():
         self.fh.close()
 
 
-class CovScanner():
+class CovScanner(object):
     def __init__(self):
         self.window_size = ()
         self.pos_start = 0
@@ -257,7 +257,7 @@ class CovScanner():
         return window_mean
 
 
-class FilePrinter():
+class FilePrinter(object):
     def __init__(self, path):
         self._path = path
         self._fh = None
