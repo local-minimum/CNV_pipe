@@ -224,19 +224,32 @@ class CovScanner(object):
         self.name = name
 
     def move(self, ln):
-        while self.pos_end < ln:
-            window_mean = self.windowMean(self.bamfile)
-            self.POS.append(self.pos_end)
-            self.RATIOS.append(self.getLogRatios(window_mean))
-            self.pos_start = self.pos_start + self.window_size
-            self.pos_end = self.pos_end + self.window_size
+
+        pos_start = self.pos_start
+        pos_end = self.pos_end
+        endSteps = numpy.arange(pos_end, ln, self.window_size)
+        startSteps = numpy.arange(pos_start, pos_start + endSteps.size * self.window_size, self.window_size)
+        POS = [None] * endSteps.size
+        RATIO = [None] * endSteps.size
+
+
+        for i, (pos_start, pos_end) in enumerate(zip(startSteps, endSteps)):
+            POS[i] = pos_end
+            RATIO[i] = self.getLogRatios(self.windowMean(self.bamfile, pos_start, pos_end), pos_start, pos_end)
+
+        self.pos_start = pos_start + self.window_size
+        self.pos_end = pos_end + self.window_size
+
+        self.POS += POS
+        self.RATIOS += RATIO
+
         return self.RATIOS, self.POS
 
-    def getLogRatios(self, window_mean):
+    def getLogRatios(self, window_mean, pos_start, pos_end):
         if self.ref is None:
             logRatio = window_mean / self.medians[self.name]
         else:
-            win_mean_ref = self.windowMean(self.ref)
+            win_mean_ref = self.windowMean(self.ref, pos_start, pos_end)
             if win_mean_ref == 0:
                 win_mean_ref = 1
             logRatio = (window_mean * self.normalizer) / win_mean_ref
@@ -246,9 +259,9 @@ class CovScanner(object):
 
         return logRatio
 
-    def windowMean(self, bamPath):
+    def windowMean(self, bamPath, pos_start, pos_end):
         bam = pysam.AlignmentFile(bamPath, "rb")
-        bamPile = bam.pileup(self.name, self.pos_start, self.pos_end, truncate=True)
+        bamPile = bam.pileup(self.name, pos_start, pos_end, truncate=True)
         WINDOW_COVS = numpy.zeros((len(bamPile),))
 
         for i, pile in enumerate(bamPile):
