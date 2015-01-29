@@ -246,8 +246,8 @@ class CovScanner(object):
 
         return logRatio
 
-    def windowMean(self, bam):
-        bam = pysam.AlignmentFile(bam, "rb")
+    def windowMean(self, bamPath):
+        bam = pysam.AlignmentFile(bamPath, "rb")
         bamPile = bam.pileup(self.name, self.pos_start, self.pos_end, truncate=True)
         WINDOW_COVS = numpy.zeros((len(bamPile),))
 
