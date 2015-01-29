@@ -282,13 +282,20 @@ class FilePrinter(object):
 
     def printListToFile(self, LIST):
 
+        #TODO: If line always is a string, this is OK else it would be correct to unpack it so that each item of
+        #the line is sent separately using
+        #self.printToFile(*line)
         for line in LIST:
-            self._fh.write("%s\n" % line)
+            self.printToFile(line)
 
-    def printZipListToFile(self, LIST1, LIST2):
+    def printZipListToFile(self, *listOfLists):
 
-        for line1, line2 in zip(LIST1, LIST2):
-            self._fh.write("%s\t%s\n" % (line1, line2))
+        """Zips all parameter lists and prints them
+
+        :param listOfLists: All lists sent to function to be printed
+        """
+        for line in zip(*listOfLists):
+            self.printToFile(*line)
 
 
 """ START """
