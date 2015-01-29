@@ -248,20 +248,22 @@ class CovScanner(object):
 
     def windowMean(self, bam):
         bam = pysam.AlignmentFile(bam, "rb")
-        WINDOW_COVS = []
-        cov = ()
-        for pile in bam.pileup(self.name, self.pos_start, self.pos_end, truncate=True):
+        bamPile = bam.pileup(self.name, self.pos_start, self.pos_end, truncate=True)
+        WINDOW_COVS = numpy.zeros((len(bamPile),))
+
+        for i, pile in enumerate(bamPile):
             cov = 0
             for reads in pile.pileups:
                 if reads.alignment.mapq >= self.mapq_cutoff:
                     cov = cov + 1
-            WINDOW_COVS.append(cov)
-        if sum(WINDOW_COVS) > 0:
-            window_mean = numpy.mean(WINDOW_COVS)
-        else:
-            window_mean = 0
+            WINDOW_COVS[i] = cov
+
         bam.close()
-        return window_mean
+
+        if WINDOW_COVS.sum() > 0:
+            return numpy.mean(WINDOW_COVS)
+        else:
+            return 0
 
 
 class FilePrinter(object):
