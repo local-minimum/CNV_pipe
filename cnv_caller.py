@@ -44,30 +44,38 @@ def setAbsPath(options):
 
 
 def getNames(bam):
-    header_dict = bam.header
-    NAMES = []
-    LENGTHS = []
+    header_dictSQ = bam.header.get('SQ')
+    numberOfHeaders = len(header_dictSQ)
+    #NOTE: Appending takes quite a while, if length is known, better create it and insert values
+    NAMES = [None] * numberOfHeaders
+    LENGTHS = [None] * numberOfHeaders
     i = 0
-    while i < len(header_dict.get('SQ')):
-        NAMES.append(header_dict.get('SQ')[i].get('SN'))
-        LENGTHS.append(header_dict.get('SQ')[i].get('LN'))
+    while i < numberOfHeaders:
+        NAMES[i] = header_dictSQ[i].get('SN')
+        LENGTHS[i] = header_dictSQ[i].get('LN')
         i = i + 1
     return NAMES, LENGTHS
 
 
-def median(lst):
-    return numpy.median(numpy.array(lst))
+def median(valueList):
+    #TODO: These numpy functions take any iterable and outputs an array, no need to convert it first
+    return numpy.median(valueList)
 
+
+def _pileUpBam(bam, name, ln):
+    #TODO: Verify that the pile has a length
+    bamPile = bam.pileup(name, 0, ln)
+    result = [None] * len(bamPile)
+    for i, pile in enumerate(bamPile):
+        result[i] = pile.n
+    return result
 
 def getMedianCov(bam, NAMES, LENGTH):
     medians_dict = {}
     for name, ln in zip(NAMES, LENGTH):
-        COVS = []
-        for pile in bam.pileup(name, 0, ln):
-            cov = pile.n
-            COVS.append(cov)
-        chr_median = median(COVS)
-        medians_dict[name] = chr_median
+
+        medians_dict[name] = median(_pileUpBam(bam, name, ln))
+
     return medians_dict
 
 
@@ -75,10 +83,9 @@ def getNormalizer(bam, ref, NAMES, LENGTH):
     REF = []
     BAM = []
     for name, ln in zip(NAMES, LENGTH):
-        for bam_pile in bam.pileup(name, 0, ln):
-            BAM.append(bam_pile.n)
-        for ref_pile in ref.pileup(name, 0, ln):
-            REF.append(ref_pile.n)
+        BAM += _pileUpBam(bam, name, ln)
+        REF += _pileUpBam(ref, name, ln)
+
     normalizer = float(sum(REF)) / float(sum(BAM))
     return normalizer
 
